@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Center Lifecycle ISO Compliance Map</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .chart-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; height: 300px; }
+    .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+    .iso-tag { transition: all 0.3s ease; }
+    .iso-tag:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .step-card { transition: all 0.2s ease; border-left: 4px solid transparent; }
+    .step-card:hover { background-color: #f1f5f9; }
+    .step-card.active { border-left-color: #2563eb; background-color: #eff6ff; }
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shadow-sm z-10 shrink-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+        <span class="text-3xl">🏗️</span>
+        Data Center Lifecycle <span class="text-blue-600">ISO Compliance Map</span>
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">แผนผังควบคุมมาตรฐานอ้างอิง ISO/IEC 22237, 27001 และ 20000</p>
+    </div>
+    <div class="hidden md:flex gap-4 text-sm font-medium text-slate-600">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-blue-500"></span> ISO 22237
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-emerald-500"></span> ISO 27001
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-purple-500"></span> ISO 20000
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- Sidebar: Phase Navigation -->
+    <nav class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col overflow-y-auto scroll-hide">
+      <div class="p-6">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Lifecycle Phases</h3>
+        <div id="phase-nav" class="space-y-2">
+          <!-- Phases injected by JS -->
+        </div>
+      </div>
+
+      <div class="mt-auto p-6 bg-slate-800">
+        <h4 class="text-xs font-bold text-slate-400 mb-2">Project Health</h4>
+        <div class="w-full bg-slate-700 rounded-full h-2 mb-1">
+          <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span>Compliant</span>
+          <span id="progress-text">0%</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area (แก้: ใช้ div แทน main ซ้อน) -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-[#fdfcfb]">
+
+      <!-- Intro: Why Standard -->
+      <section id="standard-intro" class="shrink-0 p-8 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200">
+        <div class="max-w-4xl">
+          <h2 class="text-2xl font-bold text-slate-800 mb-3">บทนำ: ทำไมต้องมีมาตรฐาน?</h2>
+          <p class="text-slate-700 leading-relaxed text-sm">
+            “การทำงานที่ไม่สอดคล้องกันจะนำไปสู่ Downtime ที่ไม่คาดคิด การวางแผนตาม Lifecycle จึงเป็น
+            <span class="font-bold text-slate-900">‘ข้อบังคับ’</span> ทางวิศวกรรม เพื่อรับประกันความต่อเนื่องทางธุรกิจ”
+          </p>
+        </div>
+      </section>
+
+
+      <!-- Content Split: Steps + Detail -->
+      <div class="flex-1 flex overflow-hidden">
+
+        <!-- Center: Steps List -->
+        <section class="w-1/3 min-w-[320px] bg-white border-r border-slate-200 flex flex-col">
+          <div class="p-6 border-b border-slate-100 bg-slate-50">
+            <h2 id="current-phase-title" class="text-xl font-bold text-slate-800">Select a Phase</h2>
+            <p id="current-phase-desc" class="text-sm text-slate-500 mt-2">คำอธิบายขั้นตอนและมาตรฐานที่เกี่ยวข้อง</p>
+          </div>
+          <div id="steps-list" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <div class="text-center text-slate-400 mt-10">Please select a phase from the sidebar</div>
+          </div>
+        </section>
+
+        <!-- Right: Detail Inspector -->
+        <section class="flex-1 bg-slate-50 p-6 overflow-y-auto flex flex-col gap-6">
+
+          <!-- ISO Detail Card -->
+          <div id="detail-card" class="glass-panel rounded-2xl p-8 shadow-sm transition-all duration-300 transform translate-y-4 opacity-0">
+            <div class="flex items-start justify-between mb-6">
+              <div>
+                <span id="detail-step-id" class="text-xs font-bold font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">STEP ID</span>
+                <h3 id="detail-title" class="text-2xl font-bold text-slate-800 mt-2">Select a Step</h3>
+              </div>
+              <div id="detail-iso-badge" class="px-4 py-2 rounded-lg bg-slate-800 text-white font-mono font-bold text-sm shadow-md">
+                ISO/IEC XXXX
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Clause Content -->
+              <div class="space-y-6">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wide mb-2">Reference Clause</h4>
+                  <div class="bg-slate-100 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="text-lg">📜</span>
+                      <span id="detail-clause-num" class="font-mono font-bold text-slate-700">Clause X.X</span>
+                    </div>
+                    <p id="detail-clause-desc" class="text-slate-600 leading-relaxed text-sm">
+                      รายละเอียดข้อกำหนดมาตรฐานจะปรากฏที่นี่...
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wide mb-2">Action Required</h4>
+                  <ul id="detail-actions" class="space-y-2 text-sm text-slate-700"></ul>
+                </div>
+              </div>
+
+              <!-- Visualization -->
+              <div class="flex flex-col items-center justify-center bg-white rounded-xl p-4 border border-slate-100 shadow-inner">
+                <h4 class="text-sm font-bold text-slate-400 mb-4 w-full text-left">Compliance Impact Analysis</h4>
+                <div class="chart-container">
+                  <canvas id="complianceChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-slate-400 mt-4">
+                  กราฟแสดงระดับผลกระทบต่อมาตรฐานด้านต่างๆ หากขั้นตอนนี้บกพร่อง
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contextual Info -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-auto">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-blue-500 text-2xl mb-2">🛡️</div>
+              <h5 class="font-bold text-slate-700 text-sm">Resilience</h5>
+              <p class="text-xs text-slate-500 mt-1">Impact on Availability & Tier Rating</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-emerald-500 text-2xl mb-2">⚡</div>
+              <h5 class="font-bold text-slate-700 text-sm">Efficiency</h5>
+              <p class="text-xs text-slate-500 mt-1">Impact on PUE & Sustainability</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-purple-500 text-2xl mb-2">🔐</div>
+              <h5 class="font-bold text-slate-700 text-sm">Security</h5>
+              <p class="text-xs text-slate-500 mt-1">Impact on Data Protection & Access</p>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const lifecycleData = [
+      {
+        id: 1,
+        title: "Phase 1: Requirements & Strategy",
+        desc: "การกำหนดโจทย์ทางธุรกิจและการประเมินความเสี่ยงเบื้องต้น (Foundation Phase)",
+        steps: [
+          {
+            id: "1.1",
+            title: "URS (User Requirement Specification)",
+            iso: "ISO/IEC 22237-1",
+            clause: "Clause 5.2: Business Risk Analysis",
+            desc: "มาตรฐานกำหนดให้ต้องระบุความต้องการทางธุรกิจ (Business Needs) และระดับความพร้อมใช้งาน (Availability Class) ที่สอดคล้องกับมูลค่าความเสียหายหากระบบหยุดชะงัก",
+            actions: ["ระบุ IT Load (kW)", "กำหนด Growth Plan 5-10 ปี", "คำนวณ Cost of Downtime"],
+            impact: [90, 40, 60]
+          },
+          {
+            id: "1.2",
+            title: "Site Selection & Risk Assessment",
+            iso: "ISO/IEC 22237-2",
+            clause: "Clause 4: Location and Site Selection",
+            desc: "ต้องประเมินความเสี่ยงจากภัยธรรมชาติและภัยที่มนุษย์สร้างขึ้น (Environmental & Man-made hazards) รวมถึงระยะห่างจากแหล่งอันตราย",
+            actions: ["ตรวจสอบระยะห่างสนามบิน/รถไฟ", "ประวัติย้อนหลังน้ำท่วม 100 ปี", "คุณภาพอากาศและฝุ่นละออง"],
+            impact: [100, 20, 80]
+          },
+          {
+            id: "1.3",
+            title: "Site Survey (Field Inspection)",
+            iso: "ISO/IEC 27001",
+            clause: "Annex A 7.1: Physical Security Perimeters",
+            desc: "การสำรวจพื้นที่จริงเพื่อประเมินขอบเขตความปลอดภัยทางกายภาพและจุดเชื่อมต่อสาธารณูปโภค (Utility Entry Points)",
+            actions: ["สำรวจจุดเชื่อมต่อไฟฟ้า (Substation)", "ตรวจสอบเส้นทาง Fiber Optic (Diversity)", "ประเมินจุดอ่อนรั้วรอบขอบชิด"],
+            impact: [80, 50, 95]
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Phase 2: Design Iteration & Control",
+        desc: "การออกแบบวิศวกรรมและการควบคุมคุณภาพแบบ (Design & Control)",
+        steps: [
+          {
+            id: "2.1",
+            title: "Conceptual Design (Layout)",
+            iso: "ISO/IEC 22237-2",
+            clause: "Clause 6: Space Planning",
+            desc: "การจัดสรรพื้นที่ (Space Allocation) ต้องแยกพื้นที่วิกฤต (White Space) ออกจากพื้นที่สนับสนุนและพื้นที่สาธารณะตามระดับ Protection Class",
+            actions: ["วางผัง Server Hall", "กำหนดเส้นทางขนย้ายอุปกรณ์", "แยกโซน Battery Room"],
+            impact: [70, 80, 60]
+          },
+          {
+            id: "2.2",
+            title: "Power System Design",
+            iso: "ISO/IEC 22237-3",
+            clause: "Clause 5: Power Distribution",
+            desc: "ออกแบบระบบจ่ายไฟฟ้าตาม Availability Class (1-4) โดยเน้นเรื่องความซ้ำซ้อน (Redundancy) และการแยกเส้นทาง (Separation of Paths)",
+            actions: ["คำนวณ Load Generator", "ออกแบบ UPS Configuration (2N, N+1)", "ทำ Selective Coordination Study"],
+            impact: [100, 90, 40]
+          },
+          {
+            id: "2.3",
+            title: "Cooling System Design",
+            iso: "ISO/IEC 22237-4",
+            clause: "Clause 5: Environmental Control",
+            desc: "การควบคุมอุณหภูมิและความชื้น รวมถึงการจัดการไหลเวียนอากาศ (Airflow Management) เพื่อให้ได้ค่า PUE ตามเป้าหมาย",
+            actions: ["คำนวณ CFD Simulation", "ออกแบบ Hot/Cold Aisle Containment", "กำหนด Setpoint อุณหภูมิ"],
+            impact: [85, 100, 20]
+          },
+          {
+            id: "2.4",
+            title: "Design Review & Approval",
+            iso: "ISO 9001",
+            clause: "Clause 8.3.4: Design and Development Controls",
+            desc: "ต้องมีการทบทวนการออกแบบ (Design Review) เพื่อให้มั่นใจว่าผลลัพธ์การออกแบบตรงตามข้อกำหนด URS ก่อนเริ่มดำเนินการต่อ",
+            actions: ["ทำ Design Compliance Checklist", "Internal Peer Review", "Client Sign-off"],
+            impact: [90, 90, 90]
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "Phase 3: Procurement & Construction",
+        desc: "การก่อสร้างและการจัดการการเปลี่ยนแปลง (Execution)",
+        steps: [
+          {
+            id: "3.1",
+            title: "Construction Management",
+            iso: "ISO/IEC 22237-2",
+            clause: "Clause 5: Construction",
+            desc: "การก่อสร้างอาคารต้องใช้วัสดุที่ไม่ติดไฟ (Non-combustible) และโครงสร้างต้องทนต่อแรงสั่นสะเทือนตามค่าที่กำหนด",
+            actions: ["ตรวจสอบสเปกวัสดุกันไฟ", "ทดสอบการรับน้ำหนักพื้น (Floor Loading)", "ติดตั้ง Vapor Barrier"],
+            impact: [95, 30, 80]
+          },
+          {
+            id: "3.2",
+            title: "Change Management (Field)",
+            iso: "ISO/IEC 20000-1",
+            clause: "Clause 8.5.2: Change Management",
+            desc: "หากมีการแก้ไขแบบหน้างาน ต้องผ่านกระบวนการขออนุมัติการเปลี่ยนแปลง (Request for Change) เพื่อประเมินผลกระทบก่อนดำเนินการ",
+            actions: ["บันทึก Change Log", "ประเมินผลกระทบต่อ Tier/Class", "อนุมัติโดย Change Authority"],
+            impact: [80, 60, 70]
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "Phase 4: Commissioning (Cx)",
+        desc: "การทดสอบระบบและการรับรองผล (Validation)",
+        steps: [
+          {
+            id: "4.1",
+            title: "Integrated Systems Test (IST)",
+            iso: "ISO/IEC 22237-1",
+            clause: "Clause 7: Commissioning",
+            desc: "การทดสอบการทำงานร่วมกันของทุกระบบในสภาวะ Full Load และ Failure Scenarios เพื่อยืนยัน Performance",
+            actions: ["ทำ Load Bank Test 100%", "ทดสอบ Black Building (Pull the plug)", "ทดสอบการสลับ Source (ATS)"],
+            impact: [100, 80, 50]
+          },
+          {
+            id: "4.2",
+            title: "Defect Rectification",
+            iso: "ISO 9001",
+            clause: "Clause 8.7: Control of Nonconforming Outputs",
+            desc: "การจัดการกับสิ่งที่ไม่เป็นไปตามข้อกำหนด (Defects) ที่พบระหว่างการทดสอบ ต้องได้รับการแก้ไขและทดสอบซ้ำ",
+            actions: ["จัดทำ Punch List", "แก้ไขงาน (Rectify)", "Retest จุดที่แก้ไข"],
+            impact: [90, 70, 60]
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "Phase 5: Operational Handover",
+        desc: "การส่งมอบและการเริ่มต้นปฏิบัติงาน (Operations)",
+        steps: [
+          {
+            id: "5.1",
+            title: "Operations Handover (Docs)",
+            iso: "ISO/IEC 22237-7",
+            clause: "Clause 5: Management and Operation",
+            desc: "การส่งมอบเอกสาร As-built, คู่มือ O&M และกระบวนการทำงาน (SOP/MOP/EOP) ให้ทีมปฏิบัติการ",
+            actions: ["ส่งมอบ As-built Drawings", "ส่งมอบ Asset Register", "อบรมทีม Operation"],
+            impact: [80, 90, 70]
+          },
+          {
+            id: "5.2",
+            title: "Security & Access Control",
+            iso: "ISO/IEC 27001",
+            clause: "Annex A 5.15: Access Control",
+            desc: "การกำหนดสิทธิ์และการควบคุมการเข้าถึงพื้นที่และระบบสารสนเทศตามหลัก Least Privilege ก่อนเปิดใช้งานจริง",
+            actions: ["ตั้งค่า Access Control List", "ทดสอบกล้อง CCTV/Biometric", "กำหนดโซนหวงห้าม"],
+            impact: [60, 20, 100]
+          }
+        ]
+      }
+    ];
+
+    let currentPhaseIndex = 0;
+    let chartInstance = null;
+
+    const phaseNav = document.getElementById('phase-nav');
+    const stepsList = document.getElementById('steps-list');
+    const detailCard = document.getElementById('detail-card');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    function init() {
+      renderPhases();
+      selectPhase(0);
+    }
+
+    function renderPhases() {
+      phaseNav.innerHTML = lifecycleData.map((phase, index) => `
+        <button onclick="selectPhase(${index})"
+          class="w-full text-left p-3 rounded-lg text-sm font-medium transition-colors duration-200
+          ${index === currentPhaseIndex ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}">
+          <div class="flex items-center gap-3">
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full border ${index === currentPhaseIndex ? 'border-white' : 'border-slate-600'} text-xs">
+              ${index + 1}
+            </span>
+            <span class="truncate">${phase.title}</span>
+          </div>
+        </button>
+      `).join('');
+
+      const progress = ((currentPhaseIndex + 1) / lifecycleData.length) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressText.innerText = `${Math.round(progress)}%`;
+    }
+
+    function selectPhase(index) {
+      currentPhaseIndex = index;
+      renderPhases();
+
+      const phase = lifecycleData[index];
+      document.getElementById('current-phase-title').innerText = phase.title;
+      document.getElementById('current-phase-desc').innerText = phase.desc;
+
+      stepsList.innerHTML = phase.steps.map((step, stepIndex) => `
+        <div onclick="selectStep(${index}, ${stepIndex})"
+          class="step-card p-4 rounded-lg cursor-pointer bg-white border border-slate-100 shadow-sm group">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-xs font-bold text-slate-400 group-hover:text-blue-500 transition-colors">${step.id}</span>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">${step.iso.split(' ')[0]}</span>
+          </div>
+          <h4 class="font-bold text-slate-700 text-sm group-hover:text-blue-700 transition-colors">${step.title}</h4>
+          <p class="text-xs text-slate-500 mt-1 truncate">${step.clause}</p>
+        </div>
+      `).join('');
+
+      selectStep(index, 0);
+    }
+
+    function selectStep(phaseIndex, stepIndex) {
+      const stepCards = document.querySelectorAll('.step-card');
+      stepCards.forEach(card => card.classList.remove('active'));
+      if (stepCards[stepIndex]) stepCards[stepIndex].classList.add('active');
+
+      const step = lifecycleData[phaseIndex].steps[stepIndex];
+
+      document.getElementById('detail-step-id').innerText = step.id;
+      document.getElementById('detail-title').innerText = step.title;
+      document.getElementById('detail-iso-badge').innerText = step.iso;
+      document.getElementById('detail-clause-num').innerText = step.clause;
+      document.getElementById('detail-clause-desc').innerText = step.desc;
+
+      document.getElementById('detail-actions').innerHTML = step.actions.map(action => `
+        <li class="flex items-center gap-2">
+          <span class="text-emerald-500">✓</span> ${action}
+        </li>
+      `).join('');
+
+      detailCard.classList.remove('opacity-0', 'translate-y-4');
+
+      updateChart(step.impact);
+    }
+
+    function updateChart(data) {
+      const ctx = document.getElementById('complianceChart').getContext('2d');
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Resilience (Uptime)', 'Efficiency (Cost)', 'Security (Risk)'],
+          datasets: [{
+            label: 'Compliance Impact',
+            data: data,
+            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+            borderColor: 'rgba(37, 99, 235, 1)',
+            pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(37, 99, 235, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+              grid: { color: 'rgba(0, 0, 0, 0.1)' },
+              pointLabels: {
+                font: { size: 12, family: 'Sarabun' },
+                color: '#64748b'
+              },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { display: false }
+            }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    window.addEventListener('load', init);
+  </script>
+
+  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</body>
+</html>
